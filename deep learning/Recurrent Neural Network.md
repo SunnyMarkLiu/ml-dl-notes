@@ -12,11 +12,11 @@
 ![](../assets/deep_learning/hierarchical_attention_encoder.png)
 
 - 分层注意力模块通过一个层次结构将过去编码向量汇总到一个上下文向量C_t ——这是一种更好的观察过去信息的方式（观点）
-- 分层结构可以看做是一棵树，其路径长度为 logN，而 RNN/LSTM 则相当于一个链表，其路径长度为 N，如果序列足够长，那么可能 N >> logN
+- 分层结构可以看做是一棵树，其路径长度为 logN，而 RNN/LSTM 则相当于一个链表，其路径长度为 N，如果序列足够长，那么 N >> logN
 
 ## 2. RNN中为什么要采用tanh而不是ReLu作为激活函数？
 （1）<font color='red'>RNN中直接把激活函数换成ReLU会导致非常大的输出值，容易导致梯度爆炸。</font>
 ![](../assets/deep_learning/why_relu_not_used_in_rnn.png)
 
 （2）基于门机制的RNN单元
-> LSTM 的门控单元采用 sigmoid 激活函数，遗忘门经过sigmoid函数之后映射成[0,1]之间的数，来控制状态的保留程度；输入门的 sigmoid 控制加入新的信息的程度，同时 tanh 控制增加信息还是减少信息（tanh(-1, 1)的输出范围）。
+LSTM 的门控机制依赖于激活函数，<font color='red'>遗忘门经过sigmoid函数之后映射成(0,1)之间的数，来控制状态的保留程度；输入门的 sigmoid 控制加入新的信息的程度，同时 tanh 控制增加信息还是减少信息 tanh(-1, 1)。

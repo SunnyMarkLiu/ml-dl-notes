@@ -27,7 +27,7 @@ NLP 中应用数据增强比较困难的原因有两点：
 ### (2) 参数初始化 Weight Initialization
 深度学习模型训练的过程本质是对 weight（即参数 W）进行更新，这需要每个参数有相应的初始值。<font color='red'>深度学习中的weight initialization对模型收敛速度和模型质量有重要影响！</font>
 #### 全零初始化 (Zero Initialization)
-如果所有的参数都是0，那么所有神经元的输出都将是相同的，那在back propagation的时候，gradient相同，weight update也相同。同一层内所有神经元的行为也是相同的。更一般地说，如果权重初始化为同一个值，神经网络将是对称的，意味着每个 layer 的每个神经元 neuro 学到的都是相同的特征，相当于每一层只有一个神经元，导致整个神经网络不够 powerful，退化为基本的线性分类器比如 logistic regression。
+如果所有的参数都是0，那么所有神经元的输出都将是相同的，那在back propagation的时候，gradient相同，weight update也相同。<font color='red'>同一层内所有神经元的行为也是相同的。更一般地说，如果权重初始化为同一个值，神经网络将是对称的，</font>意味着每个 layer 的每个神经元 neuro 学到的都是相同的特征，相当于每一层只有一个神经元，导致整个神经网络不够 powerful，退化为基本的线性分类器比如 logistic regression。
 #### 随机初始化 (Random Initialization)
 将参数值（通过高斯分布或均匀分布）随机初始化为 接近0的 一个很小的随机数（有正有负），从而使对称失效。
 
@@ -40,12 +40,14 @@ Note：
 - 控制因子：0.001 ，保证参数期望接近0；
 - 一旦随机分布选择不当，就会导致网络优化陷入困境。如下图10层的 NN 前向传播之后的权重分布:
 ![](../assets/deep_learning/random_initialization.jpg)
+
 随着层数的增加，我们看到输出值迅速向0靠拢，在后几层中，几乎所有的输出值x都很接近0！反向传播时直接导致gradient很小，使得参数难以被更新！
 - 将初始值调大一些,均值仍然为0，标准差现在变为1，下图是每一层输出值分布的直方图：
 ```
 W = tf.Variable(np.random.randn(node_in, node_out))
 ```
 ![](../assets/deep_learning/random_initialization2.jpg)
+
 几乎所有的值集中在-1或1附近，神经元saturated了！同样导致了gradient太小，参数难以被更新。
 #### Xavier initialization
 <font color='red'>Xavier初始化的基本思想是保持输入和输出的方差一致，这样就避免了所有输出值都趋向于0。</font>加上了**方差规范化：/np.sqrt(node_in) ，维持了 输入、输出数据分布方差的一致性，从而更快地收敛。**
@@ -54,9 +56,11 @@ W = tf.Variable(np.random.randn(node_in, node_out)) / np.sqrt(node_in)
 ```
 - tanh 激活函数下的 NN 每层的权重分布：
 ![](../assets/deep_learning/xavier_initialization.jpg)
+
 输出值在很多层之后依然保持着良好的分布，这很有利于我们优化神经网络！
 - ReLU 激活函数下的 NN 每层的权重分布：
 ![](../assets/deep_learning/xavier_initialization2.jpg)
+
 前面看起来还不错，后面的趋势却是越来越接近0。<font color='red'>He initialization可以用来解决ReLU初始化的问题</font>。
 #### He initialization
 在ReLU网络中，假定每一层有一半的神经元被激活，另一半为0，所以，要保持variance不变，只需要在Xavier的基础上再除以2：
@@ -64,10 +68,13 @@ W = tf.Variable(np.random.randn(node_in, node_out)) / np.sqrt(node_in)
 W = tf.Variable(np.random.randn(node_in,node_out)) / np.sqrt(node_in/2)
 ```
 ![](../assets/deep_learning/he_initialization.jpg)
+
 #### Batch Normalization layer
 <font color='red'>在非线性activation之前，输出值应该有比较好的分布（例如高斯分布），以便于back propagation时计算gradient</font>，更新weight。Batch Normalization将输出值强行做一次Gaussian Normalization和线性变换。
 - 随机初始化基础上添加 BN 层：
+
 ![](../assets/deep_learning/bn.jpg)
+
 很容易看到，Batch Normalization的效果非常好
 #### 迁移学习初始化 (Pre-train Initialization)
 将预训练模型的参数 作为新任务上的初始化参数(相当于给模型参数增加了一个很强的先验)。
@@ -97,3 +104,4 @@ W = tf.Variable(np.random.randn(node_in,node_out)) / np.sqrt(node_in/2)
 - 同样的参数,模型训练的不同阶段，即不同迭代次数的模型。
 - 不同的模型,进行线性融合. 例如RNN和传统模型.
 - Vote、Average、Stacking 等
+- Snapshot Ensemble

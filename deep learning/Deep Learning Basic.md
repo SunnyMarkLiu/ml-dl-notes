@@ -23,7 +23,7 @@ http://www.cnblogs.com/marsggbo/p/7462682.html
 - 隐藏层的数量称为模型的深度 Deep，隐藏层的维数（单元数）称为该层的宽度 Wide。
 - 万能近似定理表明一个单层的网络就足以表达任意函数，但是该层的维数可能非常大，且几乎没有泛化能力；此时，使用更深的模型能够减少所需的单元数，同时增强泛化能力（减少泛化误差）。参数数量相同的情况下，浅层网络比深层网络更容易过拟合。
 - 增加深度(layer number)和广度(neurol number)，都是在增加可学习参数的个数，从而增加网络的拟合能力。实际上在网络设计时，二者都会考虑，追求深度和广度的平衡。
-- The main issue is that these **very wide, shallow networks are very good at memorization, but not so good at generalization**.The advantage of deep layers is that they can **learn features at various levels of abstraction**, going deeper allows the models to **capture richer structures**.
+- The main issue is that these **very wide, shallow networks are very good at memorization, but not so good at generalization**.<font color='red'>The advantage of deep layers is that they can **learn features at various levels of abstraction**, going deeper allows the models to **capture richer structures**.</font>
 
 深度与宽度的区别：
 
@@ -63,9 +63,13 @@ https://www.zhihu.com/question/53976311
 
 ## 6. 对于 softmax 和 sigmoid 类型的激活函数，为什么交叉熵损失函数能取得比均方误差损失函数更好的性能？:star::star::star:
 （1）均方误差损失函数 Mean Squared Error
+
 ![](../assets/deep_learning/mse_loss.jpg)
+
 对应的权重更新为：
+
 ![](../assets/deep_learning/mse_loss_div.png)
+
 可以看出:
 - <font color='red'>w 和 b 的梯度跟激活函数的梯度成正比，激活函数的梯度越大，w和b的大小调整得越快，训练收敛得就越快。</font>
 - <font color='red'>softmax 和 sigmoid 类型的激活函数存在饱和区，导致梯度很小，参数更新慢。</font>
@@ -75,6 +79,7 @@ https://www.zhihu.com/question/53976311
 ![](../assets/deep_learning/cross_entropy_loss.png)
 
 对应的权重更新为：
+
 ![](../assets/deep_learning/cross_entropy_loss_div.png)
 
 可以看出:
@@ -85,9 +90,14 @@ https://www.zhihu.com/question/53976311
 ![](../assets/deep_learning/mse_or_crossentropy_plot.jpeg)
 
 ## 7. 为什么 ReLU 不是全程可微也能作为激活函数用于基于梯度的学习？为什么ReLu 的性能要比 tanh 和sigmoid 要好?:star::star::star::star:
-- 主要是因为它们gradient特性不同。sigmoid和tanh的gradient在饱和区域非常平缓，接近于0，很容易造成vanishing gradient的问题，减缓收敛速度。vanishing gradient在网络层数多的时候尤其明显，是加深网络结构的主要障碍之一；
+Relu 可行性：
+
 - Relu 在整个输入空间满足非线性，只是在输入大于0时为线性，信号与系统角度（傅立叶变换），通过整流引入了非线性；
-- 虽然 ReLU 在 0 点不可导，但是它依然存在左导数和右导数，只是它们不相等（相等的话就可导了），于是在实现时通常会返回左导数或右导数的其中一个，而不是报告一个导数不存在的错误；
+- 虽然 ReLU 在 0 点不可导，但是它依然存在左导数和右导数，只是它们不相等（相等的话就可导了），于是在实现时通常会返回左导数或右导数的其中一个，而不是报告一个导数不存在的错误，TensorFlow 中选择 左导数 0，从 sparser matrix 角度考虑；
+
+Relu 一般比 tanh 和 sigmoid 要好：
+
+- 主要是因为它们gradient特性不同。sigmoid和tanh的gradient在饱和区域非常平缓，接近于0，很容易造成vanishing gradient的问题，减缓收敛速度。vanishing gradient在网络层数多的时候尤其明显，是加深网络结构的主要障碍之一；
 - **采用sigmoid等函数，计算激活函数时（指数运算），计算量大，反向传播求误差梯度时，求导涉及除法，计算量相对大，而采用Relu激活函数，整个过程的计算量节省很多；**
 - Relu会使一部分神经元的输出为0，这样就造成了 **网络的稀疏性，并且减少了参数的相互依存关系，缓解了过拟合问题的发生**；
 - ReLU 的过程更接近生物神经元的作用过程。
@@ -187,9 +197,9 @@ ref: https://www.zhihu.com/question/38102762/answer/85238569
 
 （1）Internal Covariance Shift
 
-神经网络主要学习训练数据的分布，并在测试集上达到很好的泛化能力，但如果一个 batch 输入数据分布不一致，发生变化，会给模型训练带来一些困难；另一方面数据结果一层层 layer 计算之后，其数据分布也发生着变化，此现象称为 Internal Covariance Shift（内部协变量漂移）。
+**神经网络主要学习训练数据的分布，并在测试集上达到很好的泛化能力，但如果一个 batch 输入数据分布不一致，发生变化，会给模型训练带来一些困难**；另一方面数据结果一层层 layer 计算之后，其数据分布也发生着变化，此现象称为 Internal Covariance Shift（内部协变量漂移）。
 
-统计机器学习中的一个经典假设是“源空间（source domain）和目标空间（target domain）的数据分布（distribution）是一致的”。如果不一致，那么就出现了新的机器学习问题，如，transfer learning/domain adaptation等。而covariate shift就是分布不一致假设之下的一个分支问题，它是指源空间和目标空间的条件概率是一致的，但是其边缘概率不同，对于神经网络的各层输出，由于它们经过了层内操作作用，其分布显然与各层对应的输入信号分布不同，而且差异会随着网络深度增大而增大，可是它们所能“指示”的样本标记（label）仍然是不变的，这便符合了covariate shift的定义。
+**统计机器学习中的一个经典假设是“源空间（source domain）和目标空间（target domain）的数据分布（distribution）是一致的”。** 如果不一致，那么就出现了新的机器学习问题，如，transfer learning/domain adaptation等。而covariate shift就是分布不一致假设之下的一个分支问题，它是指源空间和目标空间的条件概率是一致的，但是其边缘概率不同，对于神经网络的各层输出，由于它们经过了层内操作作用，其分布显然与各层对应的输入信号分布不同，而且差异会随着网络深度增大而增大，可是它们所能“指示”的样本标记（label）仍然是不变的，这便符合了covariate shift的定义。
 
 （2）Batch Normalization
 
