@@ -20,3 +20,7 @@
 
 （2）基于门机制的RNN单元
 LSTM 的门控机制依赖于激活函数，<font color='red'>遗忘门经过sigmoid函数之后映射成(0,1)之间的数，来控制状态的保留程度；输入门的 sigmoid 控制加入新的信息的程度，同时 tanh 控制增加信息还是减少信息 tanh(-1, 1)。
+
+## LSTM 和 GRU 神经元结构
+![](../assets/deep_learning/lstm.jpeg)
+![](../assets/deep_learning/gru.png)
