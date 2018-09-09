@@ -105,3 +105,50 @@ W = tf.Variable(np.random.randn(node_in,node_out)) / np.sqrt(node_in/2)
 - 不同的模型,进行线性融合. 例如RNN和传统模型.
 - Vote、Average、Stacking 等
 - Snapshot Ensemble
+
+## 3. 文本分类的特征工程、传统方法和深度学习方法？
+### 文档预处理
+- 文本数据清洗：如清楚 html 标签、去除标点符号等。
+- 分词：一般使用 jieba 分词的精确匹配，常用语后续的文本分析。
+- 词性标注：在分词后判断词性（动词、名词、形容词、副词...），在使用jieba分词的时候设置参数就能获取。
+- 去除停用词：去除停用词以更好地捕获文本的特征和降低特征词维度。
+- 词向量的训练：通过词与上下文、上下文与词的关系，有效地将词映射为低维稠密的向量，可以很好的表示词，一般是把训练和测试的语料都用来做word-embedding。
+  - size：Word Embedding的维度，词的词向量可以比字向量维度大一些，毕竟汉字数量为9w左右常用字7000左右；
+  - window=5, <滑动窗口的大小，词一般设置为5左右，表示当前词加上前后词数量为5，如果为字的话可以设置大一点>
+  - min_count=5, <最小词频，超过该词频的才纳入统计，字的话词频可以设置高一点>
+
+### 特征工程
+#### 常规特征
+- **TF-IDF**：词频-逆文档频率，用以评估词对于一个文档集或一个语料库中的其中一个文档的重要程度，**计算出来是一个DxN维的矩阵，其中D为文档的数量，N为词汇表中词的个数**，通常会加入N-gram，也就是计算文档中N个相连词的的TF-IDF。这样针对每个文档，可以得到一个tfidf向量，可以针对这个向量引入tfidf的最大值最小值方差等统计特征，或直接将这个tfidf向量作为文档的特征表示，注意此处可以计算语料库中所有文档的每个词的tfidf值（即DxN矩阵的列）的方差，选取方差最大的词作为特征词，实现降维。
+
+```python
+from sklearn.feature_extraction.text import TfidfVectorizer
+vectorizer = TfidfVectorizer(tokenizer=" ", max_df=0.5, ngram_range=(1,3), stop_words='english')
+vectorizer = vectorizer.fit(data_train)
+train_x = vectorizer.transform(train_text)
+test_x = vectorizer.transform(test_text)
+```
+
+- **LDA（文档的主题）**：可以假设文档集有 T 个主题，一篇文档可能属于一个或多个主题，**通过 LDA 模型可以计算出文档属于某个话题的概率，这样可以计算出一个 DxT 的矩阵。** LDA 特征在文档打标签等任务上表现很好。
+
+```python
+tf_vectorizer = CountVectorizer(max_df=0.95, min_df=2,
+                                max_features=n_features,
+                                stop_words='english')
+train_counts = tf_vectorizer.fit_transform(train_text)
+lda = LatentDirichletAllocation(n_components=n_components, max_iter=5,
+                                learning_method='online',
+                                learning_offset=50.,
+                                random_state=0)
+lda.fit(train_counts)
+```
+
+- LSI（文档的潜在语义）：通过对文档-词频矩阵（实际使用中可使用 tfidf 矩阵）角线奇异值分解（SVD）来计算文档的潜在语义，和LDA有一点相似，都是文档的潜在特征。
+- 其他基本的特征：句子的长度、标点的数目、重复句子比例等。
+
+### 深度学习模型
+1. 词嵌入向量化：word2vec, FastText 等等
+2. 卷积神经网络特征提取：Text-CNN, Char-CNN, Inception 等等
+3. RNN 上下文机制：Text-RNN， BiRNN， RCNN等等
+4. 记忆存储机制：EntNet， DMN等等
+5. 注意力机制：HAN等等
