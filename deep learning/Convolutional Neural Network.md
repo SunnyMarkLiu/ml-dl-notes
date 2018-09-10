@@ -97,3 +97,23 @@ def conv2d(img, kernel):
     return feature_maps
 ```
 ![](../assets/deep_learning/cnn_space_complex.png)
+
+## 8. CNN 为什么可以用在 NLP 领域？
+- CNN的假设是数据在二维空间上存在着局部相关性；RNN的假设是数据在时序（更准确地说是一维空间）上存在相关性。
+- 卷积的过程实际上是一种模式匹配的过程，在CV的人脸识别中一个卷积核匹配的可能是眼镜或者鼻子等局部部位，而对于NLP的文本分类任务，一个卷积核匹配的则是特定的关键词或关键短语。后面提取出来的特征实际上就是表示句子中是否出现过这样的关键词或者关键短语，相当于低维空间的词袋模型，这样的特征信息对文本分类任务自然是非常有用的。
+- CNN 的filter 相当于 n-gram 提取局部相关的特征：
+  - N-gram 是直接统计不同的 N 个词之间组合在一起的概率；
+  - CNN 是通过学习得到不同词组合的每个 kernel 的权重，加权得到局部特征。
+
+## 9. CNN 中 的 filter 只提取局部特征，全局特征怎么办？该怎么融合吗？
+两种方法：
+
+（1）RNN可以提取全局特征，因此可以将 CNN 和 RNN 结合，比如 RCNN 模型：
+![](https://raw.githubusercontent.com/llhthinker/NLP-Papers/master/text%20classification/2017-10/Recurrent%20Convolutional%20Neural%20Networks%20for%20Text%20Classification/model.png)
+
+(2) 分层注意力编码器（Hierarchical attention encoder）
+
+![](https://github.com/imhuay/Algorithm_Interview_Notes-Chinese/raw/master/assets/TIM%E6%88%AA%E5%9B%BE20180720101423.png)
+
+- 分层注意力模块通过一个层次结构将过去编码向量汇总到一个上下文向量 C_t ——这是一种更好的观察过去信息的方式（观点）
+- 分层结构可以看做是一棵树，其路径长度为 logN，而 RNN/LSTM 则相当于一个链表，其路径长度为 N，如果序列足够长，那么可能 N >> logN

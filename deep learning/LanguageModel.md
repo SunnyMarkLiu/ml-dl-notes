@@ -6,9 +6,21 @@
   - 训练模型的方式不同，**n-gram基于最大似然估计来计算参数，nnlm基于RNN的优化方法来训练模型，并且这个过程中往往会有word embedding作为输入，这样对于相似的词可以有比较好的计算结果，但n-gram是严格基于词本身的**
   - 循环神经网络可以将任意长度的上下文信息存储在隐藏状态中，而不仅限于n-gram模型中的窗口限制
 
-## CBOW 和 Skip-gram 的原理
+## 2. CBOW 和 Skip-gram 的原理
 - CBOW
 ![](../assets/deep_learning/cbow.png)
 
 - Skip-gram
 ![](../assets/deep_learning/skip-gram.png)
+
+## 3. 如何解决测试阶段词向量的 OOV（out of vocabulary） 问题？
+1、如果 OOV 情况不是很多：
+
+- 将 OOV 的词当做 UNK 处理
+  - 将训练集中出现频率小于某个阈值的词都标记为 <UNK>，得到 <UNK> 的词向量，OOV 的词替换为 <UNK>
+  - <UNK> 词向量随机初始化。
+- 词向量和字向量的结合：针对 OOV 的词得词向量，将对于的字向量求平均得到其词向量
+- word hashing、subword info：将一个词拆成几个字母的组合
+- 将每个 OOV 词汇独立随机初始化一个向量，和用 <UNK> 的区别是独立随机初始化后，这些 OOV 词汇没有相似的 context，交给模型学习，设置为 <UNK> 可以看做是增加了一个很强的先验信息——这些 OOV 词汇包含相似的上下文。
+
+2、如果 OOV 的词较多，考虑将训练集和测试集拼接起来，重新训练一份针对该任务的词向量。

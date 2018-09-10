@@ -152,3 +152,44 @@ lda.fit(train_counts)
 3. RNN 上下文机制：Text-RNN， BiRNN， RCNN等等
 4. 记忆存储机制：EntNet， DMN等等
 5. 注意力机制：HAN等等
+
+## 4. 常用文本语义相似度匹配模型和比较
+（1）基于表示的模型（representation-based）
+- DSSM 系列
+  - DSSM
+    - web 点击日志作为训练数据；
+    - word hash 作为输入，可解决测试中的 oov 问题；
+    - 使用 DNN（MLP）对 query 和 doc 表达为低纬语义向量；
+    - cosine 距离衡量语义相似度；
+    - 【缺点】模型输入为词袋模型，丢失上下文信息；
+    - 【缺点】缺乏两个句子之间的交互信息。
+  - CDSSM
+    - 通过卷积层提取滑动窗口（卷积核）内的上下文信息；
+    - 通过池化层提取了全局的上下文信息，上下文信息得到了有效保留；
+    - 【缺点】对于提取间隔较远的上下文信息的能力较弱；
+  - LSTM-DSSM
+    - 提取上下文信息，LSTM 更擅长。
+    - 【缺点】两个句子都采用 LSTM 甚至是多层的，训练比较慢；
+    - 【缺点】同样，缺乏两个句子之间的交互信息。
+
+（2）基于交互的模型（interaction-based）
+
+- **利用卷积能够提取局部相关性的特征来提取两个句子的交互信息**
+  - ARC-II
+    - 基于表示的模型在最后一层才进行对两个文本的交互，ARC-II 在低层次就进行交互构造一个 交互的 feature map，后续针对此 feature map 进行 cnn 卷积
+  - MatchPyramid
+    - 将 CNN 提取局部交互特征用到极致；
+    - 输入端分别将两个句子的对应位置的词汇分别进行相似度计算的操作如 Indicator（两个句子对应位置的词是否相等）、Doc Product（词向量的点乘）和 Cosine 余弦相似度，concate 起来得到 MatchMatrix（类似多通道的图片）
+    - 针对 MatchMatrix，利用多层 2D CNN 逐层抽取特征：
+      - word-level match signals：MatchMatrix 单词级别的匹配特征
+      - phrase-level match signals：短语级别的匹配特征 n-ngram
+      - sentence-level match signals：组合低层次的匹配信息得到句子级别的匹配特征
+    - Pyramid 金字塔的意思，预示逐层抽取语义匹配特征。
+- **基于注意力机制来进行 soft align提取交互信息**
+  - Esim
+    - encoder 层：分别用双向 LSTM 对 Query 和 doc 进行编码，捕捉上下文信息；
+    - attention 层：实现 query -> doc 和 doc -> query 的双向注意力机制，实现相互的 soft align，将 attention 的权重乘以原始的编码输出的语义向量，得到新的表示向量；
+    - Compose 层：将 encode 层输出、attention 层的编码输出、以及两个句子向量之间的 diff 特征（query和doc语义向量的相减和相乘等）进行拼接得到新的语义信息更为丰富的句子表示；
+    - encode-2 层：对 compose 层输出的句子表示再经过 LSTM 编码；
+    - Aggregate 层：将编码输出的句子表示进行 global avg/max pooling，得到pooling之后的全局特征的表达；
+    - MLP 层：对 aggregate 层最终输出的两个全局语义向量求 diff（相减和相乘），mlp 计算最后的匹配得分。
